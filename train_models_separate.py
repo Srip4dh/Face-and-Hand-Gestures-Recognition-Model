@@ -1,0 +1,96 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "7ec7f959-adc1-4ad5-9b16-72736adffaf9",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " face_model trained and saved with 4590 samples\n",
+      " hand_model trained and saved with 5720 samples\n"
+     ]
+    }
+   ],
+   "source": [
+    "import os\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "import joblib\n",
+    "\n",
+    "def train_model(data_folder, model_name):\n",
+    "    X, y = [], []\n",
+    "\n",
+    "    for filename in os.listdir(data_folder):\n",
+    "        if filename.endswith(\".csv\"):\n",
+    "            label = filename.replace(\".csv\", \"\")\n",
+    "            filepath = os.path.join(data_folder, filename)\n",
+    "            df = pd.read_csv(filepath)\n",
+    "            if df.empty:\n",
+    "                print(f\"Warning: {filename} is empty, skipping\")\n",
+    "                continue\n",
+    "            X.append(df.values)\n",
+    "            y.extend([label] * len(df))\n",
+    "\n",
+    "    if not X:\n",
+    "        print(f\"No data found in {data_folder}, skipping training for {model_name}\")\n",
+    "        return\n",
+    "\n",
+    "    X = np.vstack(X)\n",
+    "    y = np.array(y)\n",
+    "\n",
+    "    scaler = StandardScaler()\n",
+    "    X_scaled = scaler.fit_transform(X)\n",
+    "\n",
+    "    model = RandomForestClassifier(n_estimators=150, random_state=42)\n",
+    "    model.fit(X_scaled, y)\n",
+    "\n",
+    "    joblib.dump(model, f\"{model_name}.pkl\")\n",
+    "    joblib.dump(scaler, f\"{model_name}_scaler.pkl\")\n",
+    "\n",
+    "    print(f\" {model_name} trained and saved with {len(y)} samples\")\n",
+    "\n",
+    "def main():\n",
+    "    train_model(\"dataset/face\", \"face_model\")\n",
+    "    train_model(\"dataset/hand\", \"hand_model\")\n",
+    "\n",
+    "if __name__ == \"__main__\":\n",
+    "    main()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6e80a8d5-6f07-4ccf-abc3-8b7e7b6713f6",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
